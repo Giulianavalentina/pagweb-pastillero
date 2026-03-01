@@ -1,0 +1,16 @@
+-- CreateTable
+CREATE TABLE "Alarm" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "time" TEXT NOT NULL,
+    "label" TEXT,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "History" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "alarmId" INTEGER,
+    "action" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

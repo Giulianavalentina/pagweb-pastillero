@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Alarm {
+  id        Int      @id @default(autoincrement())
+  time      String
+  label     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model History {
+  id        Int      @id @default(autoincrement())
+  alarmId   Int?
+  action    String
+  createdAt DateTime @default(now())
+}
