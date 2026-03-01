@@ -1,5 +1,22 @@
+# dependencies
 node_modules
-# Keep environment variables out of version control
-.env
 
-/lib/generated/prisma
+# env
+.env
+.env.local
+.env.production
+
+# next.js
+.next/
+out/
+
+# database
+*.db
+*.db-journal
+prisma/*.db
+
+# debug
+npm-debug.log*
+
+# misc
+.DS_Store
