@@ -20,13 +20,10 @@ import {
 
 /* ═══════════════════════════════════════════════════════
    TIPOS DE DATOS
-   ───────────────────────────────────────────────────────
-   Estos tipos pueden moverse a un archivo types.ts
-   y coincidir con los modelos de Prisma.
    ═══════════════════════════════════════════════════════ */
 
 interface Alarma {
-  id: string
+  id: number
   hora: string
   medicamento: string
   dosis: string
@@ -34,7 +31,7 @@ interface Alarma {
 }
 
 interface RegistroDispensacion {
-  id: string
+  id: number
   medicamento: string
   hora: string
   fecha: string
@@ -45,34 +42,6 @@ interface DatosAdherencia {
   porcentaje: number
   dosisTomadas: number
   dosisTotal: number
-}
-
-/* ═══════════════════════════════════════════════════════
-   DATOS INICIALES (reemplazar por llamadas a Prisma)
-   ───────────────────────────────────────────────────────
-   Estas constantes simulan los datos que vendrian
-   de la base de datos. Para conectar Prisma:
-   1. Crea un Server Component que haga la consulta.
-   2. Pasa los resultados como props a este componente.
-   ═══════════════════════════════════════════════════════ */
-
-const listadoMedicamentos: Alarma[] = [
-  { id: "1", hora: "08:00", medicamento: "Ibuprofeno", dosis: "400mg - 1 pastilla", activa: true },
-  { id: "2", hora: "14:00", medicamento: "Omeprazol", dosis: "20mg - 1 capsula", activa: true },
-  { id: "3", hora: "21:00", medicamento: "Paracetamol", dosis: "500mg - 1 pastilla", activa: false },
-  { id: "4", hora: "22:30", medicamento: "Losartan", dosis: "50mg - 1 pastilla", activa: true },
-]
-
-const historialReciente: RegistroDispensacion[] = [
-  { id: "h1", medicamento: "Ibuprofeno", hora: "08:02", fecha: "Hoy, 28 Feb", metodo: "programada" },
-  { id: "h2", medicamento: "Omeprazol", hora: "14:00", fecha: "Ayer, 27 Feb", metodo: "programada" },
-  { id: "h3", medicamento: "Paracetamol", hora: "16:30", fecha: "Ayer, 27 Feb", metodo: "manual" },
-]
-
-const datosAdherenciaInicial: DatosAdherencia = {
-  porcentaje: 85,
-  dosisTomadas: 18,
-  dosisTotal: 21,
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -95,8 +64,7 @@ function calcularCuentaRegresiva(horaObjetivo: string) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   COMPONENTE: Encabezado
-   Props: conectado, cantidadAlarmasActivas
+   COMPONENTES
    ═══════════════════════════════════════════════════════ */
 
 function Encabezado({
@@ -155,11 +123,6 @@ function Encabezado({
   )
 }
 
-/* ═══════════════════════════════════════════════════════
-   COMPONENTE: Proxima Dosis (Hero con countdown)
-   Props: horaObjetivo, medicamento, dosis
-   ═══════════════════════════════════════════════════════ */
-
 function ProximaDosis({
   horaObjetivo,
   medicamento,
@@ -209,23 +172,10 @@ function ProximaDosis({
   )
 }
 
-/* ═══════════════════════════════════════════════════════
-   COMPONENTE: Control de Hardware
-   Props: alDispensar (callback)
-   ───────────────────────────────────────────────────────
-   La funcion `manejarClickDispensar` es el punto
-   donde se conectara la logica de MQTT.
-   ═══════════════════════════════════════════════════════ */
-
 function ControlDeHardware({ alDispensar }: { alDispensar: () => void }) {
   const [estado, setEstado] = useState<"inactivo" | "dispensando" | "listo">("inactivo")
 
   const manejarClickDispensar = () => {
-    // ──────────────────────────────────────────────────
-    // TODO: Aqui va la logica de MQTT para enviar
-    // el comando al pastillero fisico, por ejemplo:
-    //   await mqttClient.publish('pillmate/dispense', '1')
-    // ──────────────────────────────────────────────────
     setEstado("dispensando")
     alDispensar()
     setTimeout(() => {
@@ -272,10 +222,6 @@ function ControlDeHardware({ alDispensar }: { alDispensar: () => void }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════
-   COMPONENTE: Interruptor (Toggle Switch)
-   ═══════════════════════════════════════════════════════ */
-
 function Interruptor({
   activado,
   alCambiar,
@@ -304,19 +250,12 @@ function Interruptor({
   )
 }
 
-/* ═══════════════════════════════════════════════════════
-   COMPONENTE: Lista de Alarmas
-   Props: listaDeAlarmas, alAlternar (toggle callback)
-   ───────────────────────────────────────────────────────
-   Renderiza con .map() sobre el array de alarmas.
-   ═══════════════════════════════════════════════════════ */
-
 function ListaDeAlarmas({
   listaDeAlarmas,
   alAlternar,
 }: {
   listaDeAlarmas: Alarma[]
-  alAlternar: (id: string) => void
+  alAlternar: (id: number) => void
 }) {
   return (
     <div className="rounded-2xl bg-card border border-border p-5 shadow-sm flex flex-col gap-4 flex-1">
@@ -368,11 +307,6 @@ function ListaDeAlarmas({
     </div>
   )
 }
-
-/* ═══════════════════════════════════════════════════════
-   COMPONENTE: Modal para Agregar Alarma
-   Props: alAgregar (callback con datos de la nueva alarma)
-   ═══════════════════════════════════════════════════════ */
 
 function ModalNuevaAlarma({
   alAgregar,
@@ -493,11 +427,6 @@ function ModalNuevaAlarma({
   )
 }
 
-/* ═══════════════════════════════════════════════════════
-   COMPONENTE: Metrica de Adherencia
-   Props: datosAdherencia (DatosAdherencia)
-   ═══════════════════════════════════════════════════════ */
-
 function MetricaAdherencia({ datosAdherencia }: { datosAdherencia: DatosAdherencia }) {
   const { porcentaje, dosisTomadas, dosisTotal } = datosAdherencia
   const [porcentajeAnimado, setPorcentajeAnimado] = useState(0)
@@ -556,13 +485,6 @@ function MetricaAdherencia({ datosAdherencia }: { datosAdherencia: DatosAdherenc
   )
 }
 
-/* ═══════════════════════════════════════════════════════
-   COMPONENTE: Historial de Dispensaciones
-   Props: datosHistorial (RegistroDispensacion[])
-   ───────────────────────────────────────────────────────
-   Renderiza con .map() sobre el array de registros.
-   ═══════════════════════════════════════════════════════ */
-
 function HistorialDispensaciones({ datosHistorial }: { datosHistorial: RegistroDispensacion[] }) {
   return (
     <div className="rounded-2xl bg-card border border-border p-5 shadow-sm flex flex-col gap-4 h-full">
@@ -601,62 +523,161 @@ function HistorialDispensaciones({ datosHistorial }: { datosHistorial: RegistroD
 
 /* ═══════════════════════════════════════════════════════
    DASHBOARD PRINCIPAL
-   ───────────────────────────────────────────────────────
-   Para conectar con Prisma, convierte este componente
-   en un Server Component wrapper que haga las queries
-   y pase los datos como props a un Client Component.
-   
-   Ejemplo:
-     // app/page.tsx (Server Component)
-     import { prisma } from '@/lib/prisma'
-     import { DashboardCliente } from './dashboard-cliente'
-   
-     export default async function Page() {
-       const listaDeAlarmas = await prisma.alarma.findMany()
-       const datosHistorial = await prisma.dispensacion.findMany({ take: 3 })
-       return <DashboardCliente listaDeAlarmas={listaDeAlarmas} ... />
-     }
    ═══════════════════════════════════════════════════════ */
 
 export default function PillMateDashboard() {
-  const [listaDeAlarmas, setListaDeAlarmas] = useState<Alarma[]>(listadoMedicamentos)
-  const [datosHistorial, setDatosHistorial] = useState<RegistroDispensacion[]>(historialReciente)
-  const [porcentajeAdherencia] = useState<DatosAdherencia>(datosAdherenciaInicial)
+  const [listaDeAlarmas, setListaDeAlarmas] = useState<Alarma[]>([])
+  const [datosHistorial, setDatosHistorial] = useState<RegistroDispensacion[]>([])
+  const [loading, setLoading] = useState(true)
   const [dispositivoConectado] = useState(true)
 
+  const calcularAdherencia = useCallback(() => {
+    if (listaDeAlarmas.length === 0) return { porcentaje: 0, dosisTomadas: 0, dosisTotal: 0 }
+    
+    const total = listaDeAlarmas.length * 7
+    const tomadas = datosHistorial.length
+    const porcentaje = total > 0 ? Math.round((tomadas / total) * 100) : 0
+    
+    return {
+      porcentaje,
+      dosisTomadas: tomadas,
+      dosisTotal: total
+    }
+  }, [listaDeAlarmas, datosHistorial])
+
+  const datosAdherencia = calcularAdherencia()
+
+  useEffect(() => {
+    fetchAlarms()
+    fetchHistory()
+  }, [])
+
+  async function fetchAlarms() {
+    try {
+      const res = await fetch('/api/alarms')
+      const data = await res.json()
+      console.log('Alarmas desde DB:', data)
+      
+      const transformadas = data.map((alarma: any) => ({
+        id: alarma.id,
+        hora: alarma.time,
+        medicamento: alarma.medicamento || '',
+        dosis: alarma.dosis || '',
+        activa: alarma.active
+      }))
+      
+      setListaDeAlarmas(transformadas)
+    } catch (error) {
+      console.error('Error cargando alarmas:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function fetchHistory() {
+    try {
+      const res = await fetch('/api/history')
+      const data = await res.json()
+      console.log('Historial desde DB:', data)
+      
+      const transformados = data.map((entry: any) => ({
+        id: entry.id,
+        medicamento: entry.alarm?.medicamento || 'Desconocido',
+        hora: new Date(entry.createdAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }),
+        fecha: new Date(entry.createdAt).toLocaleDateString('es', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric' 
+        }).replace(/\./g, ''),
+        metodo: entry.action === 'pastilla_retirada' ? 'programada' : 'manual'
+      }))
+      
+      setDatosHistorial(transformados.slice(0, 3))
+    } catch (error) {
+      console.error('Error cargando historial:', error)
+    }
+  }
+
+  const alternarAlarma = useCallback(async (id: number) => {
+    const alarma = listaDeAlarmas.find(a => a.id === id)
+    if (!alarma) return
+    
+    try {
+      const res = await fetch(`/api/alarms/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !alarma.activa })
+      })
+      
+      if (res.ok) {
+        await fetchAlarms()
+      }
+    } catch (error) {
+      console.error('Error al alternar alarma:', error)
+    }
+  }, [listaDeAlarmas])
+
+  const manejarDispensacion = useCallback(async () => {
+    const activas = listaDeAlarmas.filter(a => a.activa)
+    if (activas.length === 0) return
+    
+    const proxima = activas.sort((a, b) => a.hora.localeCompare(b.hora))[0]
+    
+    try {
+      await fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alarmId: proxima.id,
+          action: 'pastilla_retirada'
+        })
+      })
+      await fetchHistory()
+    } catch (error) {
+      console.error('Error al dispensar:', error)
+    }
+  }, [listaDeAlarmas])
+
+  const agregarAlarma = useCallback(async (datos: { hora: string; medicamento: string; dosis: string }) => {
+    try {
+      console.log("📤 Enviando alarma:", datos)
+      
+      const res = await fetch('/api/alarms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          time: datos.hora,
+          medicamento: datos.medicamento,
+          dosis: datos.dosis,
+          active: true
+        })
+      })
+      
+      if (res.ok) {
+        console.log("✅ Alarma creada exitosamente")
+        await fetchAlarms()
+      } else {
+        const error = await res.json()
+        console.error("❌ Error del servidor:", error)
+      }
+    } catch (error) {
+      console.error('Error al crear alarma:', error)
+    }
+  }, [])
+
   const alarmasActivas = listaDeAlarmas.filter((a) => a.activa)
-  const proximaAlarma = [...alarmasActivas].sort((a, b) => a.hora.localeCompare(b.hora))[0]
+  const proximaAlarma = alarmasActivas.sort((a, b) => a.hora.localeCompare(b.hora))[0]
 
-  const alternarAlarma = useCallback((id: string) => {
-    // TODO: Actualizar en Prisma -> await prisma.alarma.update({ where: { id }, data: { activa: !actual } })
-    setListaDeAlarmas((prev) => prev.map((alarma) => (alarma.id === id ? { ...alarma, activa: !alarma.activa } : alarma)))
-  }, [])
-
-  const manejarDispensacion = useCallback(() => {
-    // TODO: Guardar en Prisma -> await prisma.dispensacion.create({ data: { ... } })
-    const ahora = new Date()
-    const horaStr = ahora.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
-    const nuevoRegistro: RegistroDispensacion = {
-      id: `h-${Date.now()}`,
-      medicamento: "Dispensacion manual",
-      hora: horaStr,
-      fecha: "Hoy",
-      metodo: "manual",
-    }
-    setDatosHistorial((prev) => [nuevoRegistro, ...prev].slice(0, 3))
-  }, [])
-
-  const agregarAlarma = useCallback((datos: { hora: string; medicamento: string; dosis: string }) => {
-    // TODO: Guardar en Prisma -> await prisma.alarma.create({ data: datos })
-    const nuevaAlarma: Alarma = {
-      id: `a-${Date.now()}`,
-      hora: datos.hora,
-      medicamento: datos.medicamento,
-      dosis: datos.dosis,
-      activa: true,
-    }
-    setListaDeAlarmas((prev) => [...prev, nuevaAlarma].sort((a, b) => a.hora.localeCompare(b.hora)))
-  }, [])
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <div className="size-12 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Cargando PillMate...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -664,10 +685,13 @@ export default function PillMateDashboard() {
 
       <main className="flex-1 overflow-y-auto p-4 md:p-5 lg:p-6">
         <div className="w-full max-w-none grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5 auto-rows-min">
-          {/* Proxima Dosis - 2 columnas */}
           <div className="md:col-span-2">
             {proximaAlarma ? (
-              <ProximaDosis horaObjetivo={proximaAlarma.hora} medicamento={proximaAlarma.medicamento} dosis={proximaAlarma.dosis} />
+              <ProximaDosis 
+                horaObjetivo={proximaAlarma.hora} 
+                medicamento={proximaAlarma.medicamento} 
+                dosis={proximaAlarma.dosis} 
+              />
             ) : (
               <div className="rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-6 md:p-8 shadow-lg h-full flex flex-col justify-center">
                 <p className="text-lg font-semibold text-primary-foreground">No hay dosis programadas</p>
@@ -676,23 +700,19 @@ export default function PillMateDashboard() {
             )}
           </div>
 
-          {/* Control de Hardware */}
           <div className="md:col-span-1">
             <ControlDeHardware alDispensar={manejarDispensacion} />
           </div>
 
-          {/* Metrica de Adherencia */}
           <div className="md:col-span-1">
-            <MetricaAdherencia datosAdherencia={porcentajeAdherencia} />
+            <MetricaAdherencia datosAdherencia={datosAdherencia} />
           </div>
 
-          {/* Lista de Alarmas + boton nueva alarma - 2 columnas */}
           <div className="md:col-span-2 xl:col-span-2 flex flex-col gap-4 lg:gap-5">
             <ListaDeAlarmas listaDeAlarmas={listaDeAlarmas} alAlternar={alternarAlarma} />
             <ModalNuevaAlarma alAgregar={agregarAlarma} />
           </div>
 
-          {/* Historial Reciente - 2 columnas */}
           <div className="md:col-span-2 xl:col-span-2">
             <HistorialDispensaciones datosHistorial={datosHistorial} />
           </div>

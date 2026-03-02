@@ -10,14 +10,17 @@ datasource db {
 model Alarm {
   id        Int      @id @default(autoincrement())
   time      String
-  label     String?
+  medicamento String // Nuevo campo separado
+  dosis     String?  // Nuevo campo opcional
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
+  histories History[]
 }
 
 model History {
   id        Int      @id @default(autoincrement())
-  alarmId   Int?
+  alarmId   Int
   action    String
   createdAt DateTime @default(now())
+  alarm     Alarm    @relation(fields: [alarmId], references: [id])
 }
