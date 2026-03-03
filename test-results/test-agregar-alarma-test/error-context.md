@@ -1,0 +1,82 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img [ref=e7]
+          - generic [ref=e10]:
+            - heading "PillMate" [level=1] [ref=e11]
+            - paragraph [ref=e12]: Panel de control del dispositivo
+        - status [ref=e14]:
+          - img [ref=e18]
+          - generic [ref=e22]: En linea
+    - main [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e26]:
+          - paragraph [ref=e27]: No hay dosis programadas
+          - paragraph [ref=e28]: Agrega una alarma para comenzar
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - heading "Control de Hardware" [level=3] [ref=e32]
+            - paragraph [ref=e33]: Dispensar medicamento manualmente
+          - button "Dispensar pastilla ahora" [ref=e34] [cursor=pointer]:
+            - img [ref=e35]
+            - text: Dispensar Ahora
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - heading "Adherencia Semanal" [level=3] [ref=e41]
+              - paragraph [ref=e42]:
+                - img [ref=e43]
+                - text: Ultimos 7 dias
+            - generic [ref=e45]:
+              - img [ref=e46]
+              - text: Necesita mejora
+          - generic [ref=e49]:
+            - generic [ref=e50]:
+              - img "0% de adherencia" [ref=e51]
+              - generic [ref=e55]: 0%
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - generic [ref=e58]: Tomadas
+                - generic [ref=e59]: "0"
+              - generic [ref=e60]:
+                - generic [ref=e61]: Omitidas
+                - generic [ref=e62]: "0"
+              - generic [ref=e63]:
+                - generic [ref=e64]: Total
+                - generic [ref=e65]: "0"
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - heading "Alarmas Programadas" [level=3] [ref=e69]
+              - paragraph [ref=e70]: 0 medicamentos configurados
+            - generic [ref=e71]:
+              - img [ref=e72]
+              - paragraph [ref=e77]: No hay alarmas
+          - button "Agregar nueva alarma" [ref=e78] [cursor=pointer]:
+            - img [ref=e79]
+            - text: Nueva Alarma
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - heading "Historial Reciente" [level=3] [ref=e84]
+              - paragraph [ref=e85]: Ultimas dispensaciones
+            - img [ref=e86]
+          - paragraph [ref=e90]: No hay registros aun.
+  - generic [ref=e95] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e96]:
+      - img [ref=e97]
+    - generic [ref=e100]:
+      - button "Open issues overlay" [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]: "0"
+          - generic [ref=e104]: "1"
+        - generic [ref=e105]: Issue
+      - button "Collapse issues badge" [ref=e106]:
+        - img [ref=e107]
+  - alert [ref=e109]
+```
