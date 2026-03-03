@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('test', async ({ page }) => {
-  await page.locator('body').click();
+test('Al agregar una alarma debe aparecer en la lista', async ({ page }) => {
   await page.goto('http://localhost:3000/');
   await page.locator('div').filter({ hasText: 'Alarmas Programadas2' }).nth(2).click();
   await page.getByRole('button', { name: 'Agregar nueva alarma' }).click();
