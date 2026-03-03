@@ -6,7 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "prisma:generate": "pnpm -dlx prisma generate",
+    "prisma:migrate": "pnpm -dlx prisma migrate dev",
+    "prisma:db:create": "pnpm -dlx prisma db push",
+    "prisma:studio": "pnpm -dlx prisma studio",
+    "lint": "eslint .",
+    "test": "pnpm -dlx playwright test",
+    "test:report": "pnpm -dlx playwright show-report",
+    "test:headed": "pnpm -dlx playwright test --headed",
+    "codegen": "pnpm -dlx playwright codegen"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
