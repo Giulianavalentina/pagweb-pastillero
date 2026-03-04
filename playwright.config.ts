@@ -12,12 +12,15 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+projects: [
+    // { name: 'chromium' },
+    { 
+      name: 'firefox', 
+      use: { headless: true } 
+    }, 
+    //{ name: 'webkit', use: { headless: false } }, 
   ],
+
 
   webServer: {
     command: 'pnpm run dev',
