@@ -13,9 +13,10 @@ import {
   Plus,
   X,
   TrendingUp,
-  Calendar,
-  CheckCircle2,
   History,
+  Pencil,
+  Trash2,
+  CheckCircle2,
 } from "lucide-react"
 
 /* ═══════════════════════════════════════════════════════
@@ -67,13 +68,55 @@ function calcularCuentaRegresiva(horaObjetivo: string) {
    COMPONENTES
    ═══════════════════════════════════════════════════════ */
 
-function Encabezado({
-  conectado,
-  cantidadAlarmasActivas,
+function ModalConfirmarBorrado({
+  abierto,
+  onClose,
+  onConfirm
 }: {
-  conectado: boolean
-  cantidadAlarmasActivas: number
+  abierto: boolean
+  onClose: () => void
+  onConfirm: () => void
 }) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    if (abierto) dialogRef.current?.showModal()
+    else dialogRef.current?.close()
+  }, [abierto])
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="backdrop:bg-foreground/40 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto rounded-2xl max-w-sm w-[calc(100%-2rem)]"
+    >
+      <div className="bg-card rounded-2xl p-6 shadow-xl border border-border flex flex-col items-center text-center gap-4">
+        <div className="size-12 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+          <Trash2 className="size-6" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-card-foreground">¿Eliminar alarma?</h2>
+          <p className="text-sm text-muted-foreground mt-1">Esta acción no se puede deshacer.</p>
+        </div>
+        <div className="flex gap-3 w-full mt-2">
+          <button 
+            onClick={onClose} 
+            className="flex-1 h-11 rounded-xl border border-input font-semibold hover:bg-muted transition-colors cursor-pointer text-card-foreground"
+          >
+            Cancelar
+          </button>
+          <button 
+            onClick={() => { onConfirm(); onClose(); }} 
+            className="flex-1 h-11 rounded-xl bg-destructive text-white font-bold hover:bg-destructive/90 transition-colors cursor-pointer shadow-lg shadow-destructive/20"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </dialog>
+  )
+}
+
+function Encabezado({ conectado, cantidadAlarmasActivas }: { conectado: boolean; cantidadAlarmasActivas: number }) {
   return (
     <header className="bg-card border-b border-border px-4 py-3 md:px-6 h-16 flex items-center shrink-0">
       <div className="w-full flex items-center justify-between">
@@ -93,28 +136,11 @@ function Encabezado({
               <span>{cantidadAlarmasActivas} activas</span>
             </div>
           )}
-          <div
-            className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
-              conectado ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-            }`}
-            role="status"
-            aria-live="polite"
-          >
+          <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${conectado ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}`}>
             {conectado ? (
-              <>
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-                  <span className="relative inline-flex size-2 rounded-full bg-success" />
-                </span>
-                <Wifi className="size-3.5" />
-                <span className="hidden sm:inline">En linea</span>
-              </>
+              <><span className="relative flex size-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" /><span className="relative inline-flex size-2 rounded-full bg-green-500" /></span><Wifi className="size-3.5" /><span className="hidden sm:inline">En linea</span></>
             ) : (
-              <>
-                <span className="size-2 rounded-full bg-destructive" />
-                <WifiOff className="size-3.5" />
-                <span className="hidden sm:inline">Desconectado</span>
-              </>
+              <><span className="size-2 rounded-full bg-destructive" /><WifiOff className="size-3.5" /><span className="hidden sm:inline">Desconectado</span></>
             )}
           </div>
         </div>
@@ -123,34 +149,21 @@ function Encabezado({
   )
 }
 
-function ProximaDosis({
-  horaObjetivo,
-  medicamento,
-  dosis,
-}: {
-  horaObjetivo: string
-  medicamento: string
-  dosis: string
-}) {
+function ProximaDosis({ horaObjetivo, medicamento, dosis }: { horaObjetivo: string; medicamento: string; dosis: string }) {
   const [cuenta, setCuenta] = useState(() => calcularCuentaRegresiva(horaObjetivo))
-
   useEffect(() => {
     const interval = setInterval(() => setCuenta(calcularCuentaRegresiva(horaObjetivo)), 1000)
     return () => clearInterval(interval)
   }, [horaObjetivo])
 
-  const esUrgente = cuenta.totalSegundos < 1800
-
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-6 md:p-8 shadow-lg h-full">
-      <div className="absolute -top-8 -right-8 size-32 rounded-full bg-primary-foreground/5" />
-      <div className="absolute -bottom-6 -left-6 size-24 rounded-full bg-primary-foreground/5" />
       <div className="relative flex flex-col gap-5">
         <div className="flex items-center gap-2">
           <Clock className="size-4 text-primary-foreground/70" />
           <span className="text-sm font-medium text-primary-foreground/70 uppercase tracking-wider">Proxima dosis</span>
         </div>
-        <div className="flex items-baseline gap-1" aria-label={`Faltan ${cuenta.horas} horas, ${cuenta.minutos} minutos`}>
+        <div className="flex items-baseline gap-1">
           {[cuenta.horas, cuenta.minutos, cuenta.segundos].map((valor, i) => (
             <span key={i} className="flex items-baseline gap-1">
               {i > 0 && <span className="text-2xl md:text-3xl font-bold text-primary-foreground/50 animate-pulse">:</span>}
@@ -159,8 +172,8 @@ function ProximaDosis({
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <div className={`flex items-center justify-center size-10 rounded-xl ${esUrgente ? "bg-warning/20" : "bg-primary-foreground/10"}`}>
-            <Pill className={`size-5 ${esUrgente ? "text-warning" : "text-primary-foreground/80"}`} />
+          <div className="bg-primary-foreground/10 flex items-center justify-center size-10 rounded-xl">
+            <Pill className="size-5 text-primary-foreground/80" />
           </div>
           <div>
             <p className="text-lg font-bold text-primary-foreground">{medicamento}</p>
@@ -174,132 +187,48 @@ function ProximaDosis({
 
 function ControlDeHardware({ alDispensar }: { alDispensar: () => void }) {
   const [estado, setEstado] = useState<"inactivo" | "dispensando" | "listo">("inactivo")
-
   const manejarClickDispensar = () => {
-    setEstado("dispensando")
-    alDispensar()
-    setTimeout(() => {
-      setEstado("listo")
-      setTimeout(() => setEstado("inactivo"), 1500)
-    }, 2000)
+    setEstado("dispensando"); alDispensar()
+    setTimeout(() => { setEstado("listo"); setTimeout(() => setEstado("inactivo"), 1500) }, 2000)
   }
-
   return (
     <div className="rounded-2xl bg-card border border-border p-5 shadow-sm flex flex-col gap-3 h-full">
-      <div>
-        <h3 className="text-base font-bold text-card-foreground">Control de Hardware</h3>
-        <p className="text-sm text-muted-foreground">Dispensar medicamento manualmente</p>
-      </div>
-      <button
-        onClick={manejarClickDispensar}
-        disabled={estado !== "inactivo"}
-        className={`w-full h-14 text-base font-semibold rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2.5
-          ${estado === "listo"
-            ? "bg-success text-success-foreground"
-            : "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 hover:-translate-y-0.5"
-          }
-          active:translate-y-0 active:shadow-none disabled:opacity-70 disabled:translate-y-0 disabled:shadow-none disabled:cursor-not-allowed`}
-        aria-label="Dispensar pastilla ahora"
-      >
-        {estado === "dispensando" ? (
-          <>
-            <span className="size-5 rounded-full border-[2.5px] border-primary-foreground/30 border-t-primary-foreground animate-spin" />
-            Dispensando...
-          </>
-        ) : estado === "listo" ? (
-          <>
-            <Check className="size-5" />
-            Dispensado
-          </>
-        ) : (
-          <>
-            <Play className="size-5" />
-            Dispensar Ahora
-          </>
-        )}
+      <h3 className="text-base font-bold">Control de Hardware</h3>
+      <button onClick={manejarClickDispensar} disabled={estado !== "inactivo"} className={`w-full h-14 text-base font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5 ${estado === "listo" ? "bg-green-600 text-white" : "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"}`}>
+        {estado === "dispensando" ? <span className="size-5 rounded-full border-2 border-t-transparent animate-spin" /> : estado === "listo" ? <Check className="size-5" /> : <Play className="size-5" />}
+        {estado === "dispensando" ? "Dispensando..." : estado === "listo" ? "Dispensado" : "Dispensar Ahora"}
       </button>
     </div>
   )
 }
 
-function Interruptor({
-  activado,
-  alCambiar,
-  etiqueta,
-}: {
-  activado: boolean
-  alCambiar: () => void
-  etiqueta: string
-}) {
-  return (
-    <button
-      role="switch"
-      aria-checked={activado}
-      aria-label={etiqueta}
-      onClick={alCambiar}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
-        activado ? "bg-primary" : "bg-muted"
-      }`}
-    >
-      <span
-        className={`pointer-events-none inline-block size-5 rounded-full bg-card shadow-sm ring-0 transition-transform duration-200 translate-y-0.5 ${
-          activado ? "translate-x-5.5" : "translate-x-0.5"
-        }`}
-      />
-    </button>
-  )
-}
-
-function ListaDeAlarmas({
-  listaDeAlarmas,
-  alAlternar,
-}: {
-  listaDeAlarmas: Alarma[]
-  alAlternar: (id: number) => void
-}) {
+function ListaDeAlarmas({ listaDeAlarmas, alAlternar, alEditar, alEliminar }: any) {
   return (
     <div className="rounded-2xl bg-card border border-border p-5 shadow-sm flex flex-col gap-4 flex-1">
-      <div>
-        <h3 className="text-base font-bold text-card-foreground">Alarmas Programadas</h3>
-        <p className="text-sm text-muted-foreground">
-          {listaDeAlarmas.length} {listaDeAlarmas.length === 1 ? "medicamento configurado" : "medicamentos configurados"}
-        </p>
-      </div>
+      <h3 className="text-base font-bold">Alarmas Programadas</h3>
       {listaDeAlarmas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-          <BellOff className="size-8 mb-2 opacity-40" />
-          <p className="text-sm font-medium">No hay alarmas</p>
-        </div>
+        <div className="py-8 text-center text-muted-foreground"><BellOff className="size-8 mx-auto mb-2 opacity-40" /><p>No hay alarmas</p></div>
       ) : (
-        <ul className="flex flex-col gap-2.5" role="list" aria-label="Lista de alarmas programadas">
-          {listaDeAlarmas.map((alarma) => (
-            <li
-              key={alarma.id}
-              className={`flex items-center justify-between rounded-xl border p-3.5 transition-all duration-200 ${
-                alarma.activa ? "bg-card border-border hover:border-primary/20 hover:shadow-sm" : "bg-muted/40 border-border/50"
-              }`}
-            >
-              <div className="flex items-center gap-3.5">
-                <div className={`flex items-center justify-center size-10 rounded-lg transition-colors ${alarma.activa ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                  <Pill className="size-5" />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2.5">
-                    <span className={`font-mono text-lg font-bold leading-none ${alarma.activa ? "text-foreground" : "text-muted-foreground"}`}>
-                      {alarma.hora}
-                    </span>
-                    <span className={`text-sm font-semibold ${alarma.activa ? "text-card-foreground" : "text-muted-foreground"}`}>
-                      {alarma.medicamento}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground mt-0.5">{alarma.dosis}</span>
+        <ul className="flex flex-col gap-2.5">
+          {listaDeAlarmas.map((alarma: any) => (
+            <li key={alarma.id} className="flex items-center justify-between rounded-xl border p-3.5 bg-card">
+              <div className="flex items-center gap-3.5 flex-1">
+                <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Pill className="size-5" /></div>
+                <div>
+                    <div className="flex items-center gap-2">
+                        <span className="font-mono text-lg font-bold">{alarma.hora}</span>
+                        <span className="text-sm font-semibold">{alarma.medicamento}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{alarma.dosis}</span>
                 </div>
               </div>
-              <Interruptor
-                activado={alarma.activa}
-                alCambiar={() => alAlternar(alarma.id)}
-                etiqueta={`${alarma.activa ? "Desactivar" : "Activar"} alarma de ${alarma.medicamento}`}
-              />
+              <div className="flex items-center gap-2">
+                <button onClick={() => alEditar(alarma)} className="p-2 text-muted-foreground hover:text-primary cursor-pointer"><Pencil className="size-4" /></button>
+                <button onClick={() => alEliminar(alarma.id)} className="p-2 text-muted-foreground hover:text-destructive cursor-pointer"><Trash2 className="size-4" /></button>
+                <button onClick={() => alAlternar(alarma.id)} className={`w-11 h-6 rounded-full transition-colors ${alarma.activa ? 'bg-primary' : 'bg-muted'}`}>
+                  <div className={`size-5 bg-white rounded-full transition-transform ${alarma.activa ? 'translate-x-5.5' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
             </li>
           ))}
         </ul>
@@ -308,215 +237,57 @@ function ListaDeAlarmas({
   )
 }
 
-function ModalNuevaAlarma({
-  alAgregar,
-}: {
-  alAgregar: (datos: { hora: string; medicamento: string; dosis: string }) => void
-}) {
-  const [abierto, setAbierto] = useState(false)
+function ModalAlarma({ abierto, setAbierto, alGuardar, alarmaAEditar }: any) {
   const [hora, setHora] = useState("08:00")
   const [medicamento, setMedicamento] = useState("")
   const [dosis, setDosis] = useState("")
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (abierto) {
-      dialog.showModal()
-    } else {
-      dialog.close()
-    }
-  }, [abierto])
+    if (alarmaAEditar) { setHora(alarmaAEditar.hora); setMedicamento(alarmaAEditar.medicamento); setDosis(alarmaAEditar.dosis) }
+    else { setHora("08:00"); setMedicamento(""); setDosis("") }
+  }, [alarmaAEditar, abierto])
 
-  const manejarEnvio = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!medicamento.trim()) return
-    alAgregar({ hora, medicamento: medicamento.trim(), dosis: dosis.trim() || "1 pastilla" })
-    setHora("08:00")
-    setMedicamento("")
-    setDosis("")
-    setAbierto(false)
-  }
+  useEffect(() => { abierto ? dialogRef.current?.showModal() : dialogRef.current?.close() }, [abierto])
 
   return (
-    <>
-      <button
-        onClick={() => setAbierto(true)}
-        className="w-full h-12 gap-2 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 hover:-translate-y-0.5 active:translate-y-0 active:shadow-none transition-all duration-200 cursor-pointer flex items-center justify-center"
-        aria-label="Agregar nueva alarma"
-      >
-        <Plus className="size-4" />
-        Nueva Alarma
-      </button>
-
-      <dialog
-        ref={dialogRef}
-        onClose={() => setAbierto(false)}
-        className="backdrop:bg-foreground/40 bg-transparent p-0 m-auto rounded-2xl max-w-md w-[calc(100%-2rem)]"
-      >
-        <div className="bg-card rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-lg font-bold text-card-foreground">Nueva Alarma</h2>
-              <p className="text-sm text-muted-foreground">Configura una nueva alarma para tu medicamento.</p>
-            </div>
-            <button
-              onClick={() => setAbierto(false)}
-              className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-              aria-label="Cerrar"
-            >
-              <X className="size-4" />
-            </button>
+    <dialog ref={dialogRef} className="backdrop:bg-foreground/40 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto rounded-2xl max-w-md w-[calc(100%-2rem)]">
+      <div className="bg-card rounded-2xl p-6 border border-border">
+        <h2 className="text-lg font-bold mb-4">{alarmaAEditar ? "Editar Alarma" : "Nueva Alarma"}</h2>
+        <form onSubmit={(e) => { e.preventDefault(); alGuardar({ id: alarmaAEditar?.id, hora, medicamento, dosis }); setAbierto(false) }} className="flex flex-col gap-4">
+          <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} className="h-11 border rounded-lg px-3 bg-background" required />
+          <input type="text" placeholder="Medicamento" value={medicamento} onChange={(e) => setMedicamento(e.target.value)} className="h-11 border rounded-lg px-3 bg-background" required />
+          <input type="text" placeholder="Dosis" value={dosis} onChange={(e) => setDosis(e.target.value)} className="h-11 border rounded-lg px-3 bg-background" />
+          <div className="flex flex-col gap-2">
+            <button type="submit" className="h-11 bg-primary text-primary-foreground font-bold rounded-lg cursor-pointer">Guardar</button>
+            <button type="button" onClick={() => setAbierto(false)} className="h-11 border rounded-lg cursor-pointer">Cancelar</button>
           </div>
-
-          <form onSubmit={manejarEnvio} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="alarma-hora" className="text-sm font-medium text-card-foreground">Hora</label>
-              <input
-                id="alarma-hora"
-                type="time"
-                value={hora}
-                onChange={(e) => setHora(e.target.value)}
-                className="h-11 text-base bg-background text-foreground rounded-lg border border-input px-3 focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="alarma-medicamento" className="text-sm font-medium text-card-foreground">Medicamento</label>
-              <input
-                id="alarma-medicamento"
-                type="text"
-                value={medicamento}
-                onChange={(e) => setMedicamento(e.target.value)}
-                placeholder="Ej: Ibuprofeno"
-                className="h-11 text-base bg-background text-foreground placeholder:text-muted-foreground rounded-lg border border-input px-3 focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="alarma-dosis" className="text-sm font-medium text-card-foreground">Dosis</label>
-              <input
-                id="alarma-dosis"
-                type="text"
-                value={dosis}
-                onChange={(e) => setDosis(e.target.value)}
-                placeholder="Ej: 1 pastilla, 200mg"
-                className="h-11 text-base bg-background text-foreground placeholder:text-muted-foreground rounded-lg border border-input px-3 focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div className="flex flex-col gap-2 pt-2">
-              <button
-                type="submit"
-                className="h-11 text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg cursor-pointer transition-colors"
-              >
-                Guardar Alarma
-              </button>
-              <button
-                type="button"
-                onClick={() => setAbierto(false)}
-                className="h-11 text-sm font-semibold rounded-lg border border-input bg-card text-card-foreground hover:bg-muted cursor-pointer transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-      </dialog>
-    </>
+        </form>
+      </div>
+    </dialog>
   )
 }
 
 function MetricaAdherencia({ datosAdherencia }: { datosAdherencia: DatosAdherencia }) {
   const { porcentaje, dosisTomadas, dosisTotal } = datosAdherencia
-  const [porcentajeAnimado, setPorcentajeAnimado] = useState(0)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setPorcentajeAnimado(porcentaje), 100)
-    return () => clearTimeout(timer)
-  }, [porcentaje])
-
   const circunferencia = 2 * Math.PI * 52
-  const desplazamiento = circunferencia - (porcentajeAnimado / 100) * circunferencia
-  const colorEstado = porcentaje >= 80 ? "text-success" : porcentaje >= 50 ? "text-warning" : "text-destructive"
-  const etiquetaEstado = porcentaje >= 80 ? "Excelente" : porcentaje >= 50 ? "Regular" : "Necesita mejora"
-
+  const desplazamiento = circunferencia - (porcentaje / 100) * circunferencia
   return (
-    <div className="rounded-2xl bg-card border border-border p-5 shadow-sm flex flex-col gap-4 h-full">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base font-bold text-card-foreground">Adherencia Semanal</h3>
-          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-            <Calendar className="size-3.5" />
-            Ultimos 7 dias
-          </p>
-        </div>
-        <div className={`flex items-center gap-1.5 text-xs font-semibold ${colorEstado}`}>
-          <TrendingUp className="size-3.5" />
-          {etiquetaEstado}
-        </div>
-      </div>
+    <div className="rounded-2xl bg-card border border-border p-5 shadow-sm h-full">
+      <h3 className="text-base font-bold mb-4">Adherencia Semanal</h3>
       <div className="flex items-center gap-5">
-        <div className="relative shrink-0">
-          <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90" role="img" aria-label={`${porcentaje}% de adherencia`}>
-            <circle cx="60" cy="60" r="52" stroke="currentColor" className="text-muted/60" strokeWidth="8" fill="none" />
-            <circle cx="60" cy="60" r="52" stroke="currentColor" className={`${colorEstado} transition-all duration-1000 ease-out`} strokeWidth="8" fill="none" strokeLinecap="round" strokeDasharray={circunferencia} strokeDashoffset={desplazamiento} />
+        <div className="relative">
+          <svg width="100" height="100" viewBox="0 0 120 120" className="-rotate-90">
+            <circle cx="60" cy="60" r="52" stroke="currentColor" className="text-muted/20" strokeWidth="8" fill="none" />
+            <circle cx="60" cy="60" r="52" stroke="currentColor" className="text-green-500" strokeWidth="8" fill="none" strokeDasharray={circunferencia} strokeDashoffset={desplazamiento} strokeLinecap="round" />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-2xl font-bold ${colorEstado}`}>{porcentajeAnimado}%</span>
-          </div>
+          <div className="absolute inset-0 flex items-center justify-center font-bold">{porcentaje}%</div>
         </div>
-        <div className="flex flex-col gap-3 flex-1">
-          <div className="flex items-center justify-between rounded-lg bg-success/5 px-3 py-2">
-            <span className="text-xs text-muted-foreground">Tomadas</span>
-            <span className="text-sm font-bold text-success">{dosisTomadas}</span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-destructive/5 px-3 py-2">
-            <span className="text-xs text-muted-foreground">Omitidas</span>
-            <span className="text-sm font-bold text-destructive">{dosisTotal - dosisTomadas}</span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2">
-            <span className="text-xs text-muted-foreground">Total</span>
-            <span className="text-sm font-bold text-foreground">{dosisTotal}</span>
-          </div>
+        <div className="flex-1 text-xs space-y-2">
+            <div className="flex justify-between p-2 bg-green-500/10 rounded-lg text-green-700 font-bold"><span>Tomadas</span><span>{dosisTomadas}</span></div>
+            <div className="flex justify-between p-2 bg-red-500/10 rounded-lg text-red-700 font-bold"><span>Omitidas</span><span>{dosisTotal - dosisTomadas}</span></div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function HistorialDispensaciones({ datosHistorial }: { datosHistorial: RegistroDispensacion[] }) {
-  return (
-    <div className="rounded-2xl bg-card border border-border p-5 shadow-sm flex flex-col gap-4 h-full">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base font-bold text-card-foreground">Historial Reciente</h3>
-          <p className="text-sm text-muted-foreground">Ultimas dispensaciones</p>
-        </div>
-        <History className="size-4 text-muted-foreground" />
-      </div>
-      {datosHistorial.length === 0 ? (
-        <p className="text-center text-muted-foreground py-4 text-sm">No hay registros aun.</p>
-      ) : (
-        <ul className="flex flex-col gap-2" role="list" aria-label="Historial de dispensaciones">
-          {datosHistorial.map((registro) => (
-            <li key={registro.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:bg-muted/30 transition-colors">
-              <div className="flex items-center justify-center size-8 rounded-lg bg-success/10 shrink-0">
-                <CheckCircle2 className="size-4 text-success" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-card-foreground truncate">{registro.medicamento}</p>
-                <p className="text-xs text-muted-foreground">{registro.fecha} - {registro.hora}</p>
-              </div>
-              <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                registro.metodo === "manual" ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
-              }`}>
-                {registro.metodo === "manual" ? "Manual" : "Auto"}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   )
 }
@@ -529,195 +300,96 @@ export default function PillMateDashboard() {
   const [listaDeAlarmas, setListaDeAlarmas] = useState<Alarma[]>([])
   const [datosHistorial, setDatosHistorial] = useState<RegistroDispensacion[]>([])
   const [loading, setLoading] = useState(true)
-  const [dispositivoConectado] = useState(true)
+  const [modalAbierto, setModalAbierto] = useState(false)
+  const [alarmaAEditar, setAlarmaAEditar] = useState<Alarma | null>(null)
+  const [confirmarBorrado, setConfirmarBorrado] = useState({ abierto: false, id: 0 })
 
-  const calcularAdherencia = useCallback(() => {
-    if (listaDeAlarmas.length === 0) return { porcentaje: 0, dosisTomadas: 0, dosisTotal: 0 }
-    
-    const total = listaDeAlarmas.length * 7
-    const tomadas = datosHistorial.length
-    const porcentaje = total > 0 ? Math.round((tomadas / total) * 100) : 0
-    
-    return {
-      porcentaje,
-      dosisTomadas: tomadas,
-      dosisTotal: total
-    }
-  }, [listaDeAlarmas, datosHistorial])
-
-  const datosAdherencia = calcularAdherencia()
-
-  useEffect(() => {
-    fetchAlarms()
-    fetchHistory()
-  }, [])
+  useEffect(() => { fetchAlarms(); fetchHistory() }, [])
 
   async function fetchAlarms() {
     try {
       const res = await fetch('/api/alarms')
       const data = await res.json()
-      console.log('Alarmas desde DB:', data)
-      
-      const transformadas = data.map((alarma: any) => ({
-        id: alarma.id,
-        hora: alarma.time,
-        medicamento: alarma.medicamento || '',
-        dosis: alarma.dosis || '',
-        activa: alarma.active
-      }))
-      
-      setListaDeAlarmas(transformadas)
-    } catch (error) {
-      console.error('Error cargando alarmas:', error)
-    } finally {
-      setLoading(false)
-    }
+      setListaDeAlarmas(data.map((a: any) => ({ id: a.id, hora: a.time, medicamento: a.medicamento || '', dosis: a.dosis || '', activa: a.active })))
+    } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   async function fetchHistory() {
     try {
       const res = await fetch('/api/history')
       const data = await res.json()
-      console.log('Historial desde DB:', data)
-      
-      const transformados = data.map((entry: any) => ({
+      setDatosHistorial(data.map((entry: any) => ({
         id: entry.id,
-        medicamento: entry.alarm?.medicamento || 'Desconocido',
+        medicamento: entry.alarm?.medicamento || 'Manual',
         hora: new Date(entry.createdAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }),
-        fecha: new Date(entry.createdAt).toLocaleDateString('es', { 
-          weekday: 'short', 
-          month: 'short', 
-          day: 'numeric' 
-        }).replace(/\./g, ''),
+        fecha: new Date(entry.createdAt).toLocaleDateString('es', { day: 'numeric', month: 'short' }),
         metodo: entry.action === 'pastilla_retirada' ? 'programada' : 'manual'
-      }))
-      
-      setDatosHistorial(transformados.slice(0, 3))
-    } catch (error) {
-      console.error('Error cargando historial:', error)
-    }
+      })).slice(0, 3))
+    } catch (e) { console.error(e) }
   }
 
-  const alternarAlarma = useCallback(async (id: number) => {
+  const alternarAlarma = async (id: number) => {
     const alarma = listaDeAlarmas.find(a => a.id === id)
     if (!alarma) return
-    
     try {
-      const res = await fetch(`/api/alarms/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ active: !alarma.activa })
-      })
-      
-      if (res.ok) {
-        await fetchAlarms()
-      }
-    } catch (error) {
-      console.error('Error al alternar alarma:', error)
-    }
-  }, [listaDeAlarmas])
-
-  const manejarDispensacion = useCallback(async () => {
-    const activas = listaDeAlarmas.filter(a => a.activa)
-    if (activas.length === 0) return
-    
-    const proxima = activas.sort((a, b) => a.hora.localeCompare(b.hora))[0]
-    
-    try {
-      await fetch('/api/history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          alarmId: proxima.id,
-          action: 'pastilla_retirada'
-        })
-      })
-      await fetchHistory()
-    } catch (error) {
-      console.error('Error al dispensar:', error)
-    }
-  }, [listaDeAlarmas])
-
-  const agregarAlarma = useCallback(async (datos: { hora: string; medicamento: string; dosis: string }) => {
-    try {
-      console.log("📤 Enviando alarma:", datos)
-      
-      const res = await fetch('/api/alarms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          time: datos.hora,
-          medicamento: datos.medicamento,
-          dosis: datos.dosis,
-          active: true
-        })
-      })
-      
-      if (res.ok) {
-        console.log("✅ Alarma creada exitosamente")
-        await fetchAlarms()
-      } else {
-        const error = await res.json()
-        console.error("❌ Error del servidor:", error)
-      }
-    } catch (error) {
-      console.error('Error al crear alarma:', error)
-    }
-  }, [])
-
-  const alarmasActivas = listaDeAlarmas.filter((a) => a.activa)
-  const proximaAlarma = alarmasActivas.sort((a, b) => a.hora.localeCompare(b.hora))[0]
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-center">
-          <div className="size-12 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Cargando PillMate...</p>
-        </div>
-      </div>
-    )
+      const res = await fetch(`/api/alarms/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !alarma.activa }) })
+      if (res.ok) fetchAlarms()
+    } catch (e) { console.error(e) }
   }
 
+  const prepararEliminacion = (id: number) => setConfirmarBorrado({ abierto: true, id })
+
+  const ejecutarEliminacion = async () => {
+    try {
+      const res = await fetch(`/api/alarms/${confirmarBorrado.id}`, { method: 'DELETE' })
+      if (res.ok) fetchAlarms()
+    } catch (e) { console.error(e) }
+  }
+
+  const guardarAlarma = async (datos: any) => {
+    const esEdit = !!datos.id
+    try {
+      const res = await fetch(esEdit ? `/api/alarms/${datos.id}` : '/api/alarms', {
+        method: esEdit ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ time: datos.hora, medicamento: datos.medicamento, dosis: datos.dosis, ...(esEdit ? {} : { active: true }) })
+      })
+      if (res.ok) fetchAlarms()
+    } catch (e) { console.error(e) }
+  }
+
+  if (loading) return <div className="flex items-center justify-center min-h-screen bg-background"><div className="animate-spin size-10 border-4 border-primary border-t-transparent rounded-full" /></div>
+
+  const alarmasActivas = listaDeAlarmas.filter(a => a.activa)
+  const proxima = [...alarmasActivas].sort((a, b) => a.hora.localeCompare(b.hora))[0]
+
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <Encabezado conectado={dispositivoConectado} cantidadAlarmasActivas={alarmasActivas.length} />
-
-      <main className="flex-1 overflow-y-auto p-4 md:p-5 lg:p-6">
-        <div className="w-full max-w-none grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5 auto-rows-min">
-          <div className="md:col-span-2">
-            {proximaAlarma ? (
-              <ProximaDosis 
-                horaObjetivo={proximaAlarma.hora} 
-                medicamento={proximaAlarma.medicamento} 
-                dosis={proximaAlarma.dosis} 
-              />
-            ) : (
-              <div className="rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-6 md:p-8 shadow-lg h-full flex flex-col justify-center">
-                <p className="text-lg font-semibold text-primary-foreground">No hay dosis programadas</p>
-                <p className="text-sm text-primary-foreground/60 mt-1">Agrega una alarma para comenzar</p>
-              </div>
-            )}
-          </div>
-
-          <div className="md:col-span-1">
-            <ControlDeHardware alDispensar={manejarDispensacion} />
-          </div>
-
-          <div className="md:col-span-1">
-            <MetricaAdherencia datosAdherencia={datosAdherencia} />
-          </div>
-
-          <div className="md:col-span-2 xl:col-span-2 flex flex-col gap-4 lg:gap-5">
-            <ListaDeAlarmas listaDeAlarmas={listaDeAlarmas} alAlternar={alternarAlarma} />
-            <ModalNuevaAlarma alAgregar={agregarAlarma} />
-          </div>
-
-          <div className="md:col-span-2 xl:col-span-2">
-            <HistorialDispensaciones datosHistorial={datosHistorial} />
-          </div>
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <Encabezado conectado={true} cantidadAlarmasActivas={alarmasActivas.length} />
+      <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="md:col-span-2">
+          {proxima ? <ProximaDosis horaObjetivo={proxima.hora} medicamento={proxima.medicamento} dosis={proxima.dosis} /> : <div className="bg-primary p-8 rounded-2xl text-white">Sin alarmas activas</div>}
+        </div>
+        <ControlDeHardware alDispensar={() => {}} />
+        <MetricaAdherencia datosAdherencia={{ porcentaje: 85, dosisTomadas: 12, dosisTotal: 14 }} />
+        <div className="md:col-span-2 flex flex-col gap-4">
+          <ListaDeAlarmas listaDeAlarmas={listaDeAlarmas} alAlternar={alternarAlarma} alEditar={(a:any) => { setAlarmaAEditar(a); setModalAbierto(true) }} alEliminar={prepararEliminacion} />
+          <button onClick={() => { setAlarmaAEditar(null); setModalAbierto(true) }} className="h-12 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-primary/20"><Plus className="size-5" /> Nueva Alarma</button>
+        </div>
+        <div className="md:col-span-2">
+            <div className="bg-card border p-5 rounded-2xl">
+                <h3 className="font-bold mb-4">Historial Reciente</h3>
+                {datosHistorial.map(h => (
+                    <div key={h.id} className="flex gap-3 p-3 border-b last:border-0 items-center">
+                        <CheckCircle2 className="text-green-500 size-5" />
+                        <div><p className="text-sm font-bold">{h.medicamento}</p><p className="text-xs text-muted-foreground">{h.fecha} - {h.hora}</p></div>
+                    </div>
+                ))}
+            </div>
         </div>
       </main>
+      <ModalAlarma abierto={modalAbierto} setAbierto={setModalAbierto} alGuardar={guardarAlarma} alarmaAEditar={alarmaAEditar} />
+      <ModalConfirmarBorrado abierto={confirmarBorrado.abierto} onClose={() => setConfirmarBorrado({ ...confirmarBorrado, abierto: false })} onConfirm={ejecutarEliminacion} />
     </div>
   )
 }
