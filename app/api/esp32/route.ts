@@ -1,69 +1,83 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Cola de comandos para el ESP32
+// Variables en memoria del servidor (se limpian si reinicias el servidor)
 let comandoPendiente: string | null = null;
+let huboCambioConfig = false; 
 
-// GET: El ESP32 pregunta si hay comandos
+// GET: El ESP32 pregunta qué hay de nuevo
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const path = url.pathname.split('/').pop();
-  
-  // Devolver comandos pendientes
-  if (path === 'comandos') {
-    return NextResponse.json({ 
-      comando: comandoPendiente 
+  const path = url.pathname.split('/').filter(Boolean).pop();
+  const queryPath = url.searchParams.get('path');
+
+  // Si es una consulta del ESP32
+  if (path === 'esp32' || queryPath === 'comandos' || path === 'comandos') {
+    
+    // 1. Buscamos la alarma activa más próxima en la base de datos
+    const proximaAlarma = await prisma.alarm.findFirst({
+      where: { active: true },
+      orderBy: { time: 'asc' }
     });
+
+    // 2. Preparamos el paquete de datos
+    const respuesta = {
+      comando: comandoPendiente,
+      actualizarConfig: huboCambioConfig, // 🚩 La bandera mágica
+      horaProgramada: proximaAlarma?.time || "00:00",
+      alarmaActivada: !!proximaAlarma
+    };
+
+    // 3. Limpieza: Si había un comando o un cambio, los damos por "entregados"
+    if (comandoPendiente) {
+      console.log("📤 Orden manual enviada:", comandoPendiente);
+      comandoPendiente = null;
+    }
+
+    if (huboCambioConfig) {
+      console.log("♻️ Configuración sincronizada con el ESP32");
+      huboCambioConfig = false; 
+    }
+
+    return NextResponse.json(respuesta);
   }
-  
-  // Devolver configuración actual
-  if (path === 'config') {
-    // Aquí puedes obtener de tu BD
-    return NextResponse.json({
-      horaProgramada: '08:00',
-      alarmaActivada: true
-    });
-  }
-  
-  return NextResponse.json({ error: 'Ruta no encontrada' }, { status: 404 });
+
+  return NextResponse.json({ error: 'Ruta no válida' }, { status: 404 });
 }
 
-// POST: El ESP32 envía eventos/estados
-export async function POST(request: Request) {
-  const url = new URL(request.url);
-  const path = url.pathname.split('/').pop();
-  
-  const body = await request.json();
-  
-  if (path === 'eventos') {
-    // Guardar evento en la BD
-    console.log('Evento recibido:', body);
-    
-    // Aquí guardas con Prisma
-    // await prisma.evento.create({ data: body });
-    
-    return NextResponse.json({ success: true });
-  }
-  
-  if (path === 'estado') {
-    console.log('Estado recibido:', body);
-    return NextResponse.json({ success: true });
-  }
-  
-  return NextResponse.json({ error: 'Ruta no encontrada' }, { status: 404 });
-}
-
-// POST para enviar comandos desde tu web
+// PUT: Este lo usaremos para el BOTÓN de dispensar y para NOTIFICAR cambios
 export async function PUT(request: Request) {
-  const { comando } = await request.json();
-  
-  // Guardar comando para que el ESP32 lo recoja
-  comandoPendiente = comando;
-  
-  // Opcional: Programar para que se limpie después de un tiempo
-  setTimeout(() => {
-    comandoPendiente = null;
-  }, 10000); // 10 segundos
-  
-  return NextResponse.json({ success: true });
+  try {
+    const body = await request.json();
+    const { comando, tipo } = body;
+
+    // Si el tipo es 'config', es porque agregaste/editaste una alarma en la web
+    if (tipo === 'config') {
+      huboCambioConfig = true;
+      console.log("📢 Cambio en alarmas detectado. Avisando al ESP32...");
+      return NextResponse.json({ success: true, mensaje: "Aviso de cambio guardado" });
+    }
+
+    // Si hay un comando (el botón de "Abrir")
+    if (comando) {
+      comandoPendiente = comando;
+      console.log("📥 Comando manual recibido:", comando);
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: 'Petición sin datos' }, { status: 400 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Error en PUT' }, { status: 500 });
+  }
+}
+
+// POST: Para recibir logs del ESP32 (opcional)
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    console.log("📡 Reporte del ESP32:", body);
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    return NextResponse.json({ success: false });
+  }
 }

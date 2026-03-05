@@ -1,26 +1,21 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Pill,
   Wifi,
-  WifiOff,
-  Bell,
   Clock,
   Play,
   Check,
   BellOff,
   Plus,
-  X,
-  TrendingUp,
-  History,
   Pencil,
   Trash2,
   CheckCircle2,
 } from "lucide-react"
 
 /* ═══════════════════════════════════════════════════════
-   TIPOS DE DATOS
+   TIPOS E INTERFACES
    ═══════════════════════════════════════════════════════ */
 
 interface Alarma {
@@ -60,89 +55,47 @@ function calcularCuentaRegresiva(horaObjetivo: string) {
     horas: String(Math.floor(diff / 3600)).padStart(2, "0"),
     minutos: String(Math.floor((diff % 3600) / 60)).padStart(2, "0"),
     segundos: String(diff % 60).padStart(2, "0"),
-    totalSegundos: diff,
   }
 }
 
 /* ═══════════════════════════════════════════════════════
-   COMPONENTES
+   COMPONENTES DE UI
    ═══════════════════════════════════════════════════════ */
 
-function ModalConfirmarBorrado({
-  abierto,
-  onClose,
-  onConfirm
-}: {
-  abierto: boolean
-  onClose: () => void
-  onConfirm: () => void
-}) {
+function ModalConfirmarBorrado({ abierto, onClose, onConfirm }: any) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-
   useEffect(() => {
     if (abierto) dialogRef.current?.showModal()
     else dialogRef.current?.close()
   }, [abierto])
 
   return (
-    <dialog
-      ref={dialogRef}
-      className="backdrop:bg-foreground/40 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto rounded-2xl max-w-sm w-[calc(100%-2rem)]"
-    >
+    <dialog ref={dialogRef} className="backdrop:bg-foreground/40 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto rounded-2xl max-w-sm w-[calc(100%-2rem)]">
       <div className="bg-card rounded-2xl p-6 shadow-xl border border-border flex flex-col items-center text-center gap-4">
-        <div className="size-12 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
-          <Trash2 className="size-6" />
-        </div>
+        <div className="size-12 rounded-full bg-destructive/10 flex items-center justify-center text-destructive"><Trash2 className="size-6" /></div>
         <div>
           <h2 className="text-lg font-bold text-card-foreground">¿Eliminar alarma?</h2>
           <p className="text-sm text-muted-foreground mt-1">Esta acción no se puede deshacer.</p>
         </div>
         <div className="flex gap-3 w-full mt-2">
-          <button 
-            onClick={onClose} 
-            className="flex-1 h-11 rounded-xl border border-input font-semibold hover:bg-muted transition-colors cursor-pointer text-card-foreground"
-          >
-            Cancelar
-          </button>
-          <button 
-            onClick={() => { onConfirm(); onClose(); }} 
-            className="flex-1 h-11 rounded-xl bg-destructive text-white font-bold hover:bg-destructive/90 transition-colors cursor-pointer shadow-lg shadow-destructive/20"
-          >
-            Eliminar
-          </button>
+          <button onClick={onClose} className="flex-1 h-11 rounded-xl border border-input font-semibold hover:bg-muted cursor-pointer text-card-foreground">Cancelar</button>
+          <button onClick={() => { onConfirm(); onClose(); }} className="flex-1 h-11 rounded-xl bg-destructive text-white font-bold hover:bg-destructive/90 transition-colors cursor-pointer shadow-lg shadow-destructive/20">Eliminar</button>
         </div>
       </div>
     </dialog>
   )
 }
 
-function Encabezado({ conectado, cantidadAlarmasActivas }: { conectado: boolean; cantidadAlarmasActivas: number }) {
+function Encabezado({ conectado }: { conectado: boolean; cantidadAlarmasActivas: number }) {
   return (
     <header className="bg-card border-b border-border px-4 py-3 md:px-6 h-16 flex items-center shrink-0">
       <div className="w-full flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center size-10 rounded-xl bg-primary shadow-sm">
-            <Pill className="size-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-lg md:text-xl font-bold text-foreground tracking-tight">PillMate</h1>
-            <p className="text-xs text-muted-foreground leading-none hidden md:block">Panel de control del dispositivo</p>
-          </div>
+          <div className="flex items-center justify-center size-10 rounded-xl bg-primary shadow-sm"><Pill className="size-5 text-primary-foreground" /></div>
+          <div><h1 className="text-lg md:text-xl font-bold text-foreground tracking-tight">PillMate</h1></div>
         </div>
-        <div className="flex items-center gap-3">
-          {cantidadAlarmasActivas > 0 && (
-            <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-              <Bell className="size-3.5" />
-              <span>{cantidadAlarmasActivas} activas</span>
-            </div>
-          )}
-          <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${conectado ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}`}>
-            {conectado ? (
-              <><span className="relative flex size-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" /><span className="relative inline-flex size-2 rounded-full bg-green-500" /></span><Wifi className="size-3.5" /><span className="hidden sm:inline">En linea</span></>
-            ) : (
-              <><span className="size-2 rounded-full bg-destructive" /><WifiOff className="size-3.5" /><span className="hidden sm:inline">Desconectado</span></>
-            )}
-          </div>
+        <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${conectado ? "bg-green-500/10 text-green-600" : "bg-destructive/10 text-destructive"}`}>
+          <Wifi className="size-3.5" /> <span>{conectado ? "En linea" : "Desconectado"}</span>
         </div>
       </div>
     </header>
@@ -157,46 +110,35 @@ function ProximaDosis({ horaObjetivo, medicamento, dosis }: { horaObjetivo: stri
   }, [horaObjetivo])
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-6 md:p-8 shadow-lg h-full">
-      <div className="relative flex flex-col gap-5">
-        <div className="flex items-center gap-2">
-          <Clock className="size-4 text-primary-foreground/70" />
-          <span className="text-sm font-medium text-primary-foreground/70 uppercase tracking-wider">Proxima dosis</span>
-        </div>
-        <div className="flex items-baseline gap-1">
-          {[cuenta.horas, cuenta.minutos, cuenta.segundos].map((valor, i) => (
-            <span key={i} className="flex items-baseline gap-1">
-              {i > 0 && <span className="text-2xl md:text-3xl font-bold text-primary-foreground/50 animate-pulse">:</span>}
-              <span className="text-5xl md:text-6xl font-bold text-primary-foreground font-mono tabular-nums tracking-tight">{valor}</span>
-            </span>
-          ))}
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="bg-primary-foreground/10 flex items-center justify-center size-10 rounded-xl">
-            <Pill className="size-5 text-primary-foreground/80" />
-          </div>
-          <div>
-            <p className="text-lg font-bold text-primary-foreground">{medicamento}</p>
-            <p className="text-sm text-primary-foreground/60">{dosis}</p>
-          </div>
-        </div>
-      </div>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-6 md:p-8 shadow-lg h-full text-white">
+      <div className="flex items-center gap-2 opacity-70 mb-4"><Clock className="size-4" /><span className="text-sm font-medium uppercase tracking-wider">Próxima dosis</span></div>
+      <div className="text-5xl md:text-6xl font-bold font-mono tabular-nums mb-4">{cuenta.horas}:{cuenta.minutos}:{cuenta.segundos}</div>
+      <div><p className="text-lg font-bold">{medicamento}</p><p className="text-sm opacity-80">{dosis}</p></div>
     </div>
   )
 }
 
-function ControlDeHardware({ alDispensar }: { alDispensar: () => void }) {
+function ControlDeHardware() {
   const [estado, setEstado] = useState<"inactivo" | "dispensando" | "listo">("inactivo")
-  const manejarClickDispensar = () => {
-    setEstado("dispensando"); alDispensar()
+  
+  const manejarClickDispensar = async () => {
+    setEstado("dispensando");
+    try {
+      await fetch('/api/esp32?path=comandos', {
+        method: 'PUT', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comando: 'abrir' })
+      });
+    } catch (error) { console.error(error); }
     setTimeout(() => { setEstado("listo"); setTimeout(() => setEstado("inactivo"), 1500) }, 2000)
   }
+
   return (
     <div className="rounded-2xl bg-card border border-border p-5 shadow-sm flex flex-col gap-3 h-full">
       <h3 className="text-base font-bold">Control de Hardware</h3>
       <button onClick={manejarClickDispensar} disabled={estado !== "inactivo"} className={`w-full h-14 text-base font-semibold rounded-xl transition-all flex items-center justify-center gap-2.5 ${estado === "listo" ? "bg-green-600 text-white" : "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"}`}>
         {estado === "dispensando" ? <span className="size-5 rounded-full border-2 border-t-transparent animate-spin" /> : estado === "listo" ? <Check className="size-5" /> : <Play className="size-5" />}
-        {estado === "dispensando" ? "Dispensando..." : estado === "listo" ? "Dispensado" : "Dispensar Ahora"}
+        {estado === "dispensando" ? "Enviando..." : estado === "listo" ? "¡Listo!" : "Dispensar Ahora"}
       </button>
     </div>
   )
@@ -214,20 +156,12 @@ function ListaDeAlarmas({ listaDeAlarmas, alAlternar, alEditar, alEliminar }: an
             <li key={alarma.id} className="flex items-center justify-between rounded-xl border p-3.5 bg-card">
               <div className="flex items-center gap-3.5 flex-1">
                 <div className="size-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Pill className="size-5" /></div>
-                <div>
-                    <div className="flex items-center gap-2">
-                        <span className="font-mono text-lg font-bold">{alarma.hora}</span>
-                        <span className="text-sm font-semibold">{alarma.medicamento}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{alarma.dosis}</span>
-                </div>
+                <div><div className="flex items-center gap-2"><span className="font-mono text-lg font-bold">{alarma.hora}</span><span className="text-sm font-semibold">{alarma.medicamento}</span></div><span className="text-xs text-muted-foreground">{alarma.dosis}</span></div>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => alEditar(alarma)} className="p-2 text-muted-foreground hover:text-primary cursor-pointer"><Pencil className="size-4" /></button>
                 <button onClick={() => alEliminar(alarma.id)} className="p-2 text-muted-foreground hover:text-destructive cursor-pointer"><Trash2 className="size-4" /></button>
-                <button onClick={() => alAlternar(alarma.id)} className={`w-11 h-6 rounded-full transition-colors ${alarma.activa ? 'bg-primary' : 'bg-muted'}`}>
-                  <div className={`size-5 bg-white rounded-full transition-transform ${alarma.activa ? 'translate-x-5.5' : 'translate-x-0.5'}`} />
-                </button>
+                <button onClick={() => alAlternar(alarma.id)} className={`w-11 h-6 rounded-full transition-colors ${alarma.activa ? 'bg-primary' : 'bg-muted'}`}><div className={`size-5 bg-white rounded-full transition-transform ${alarma.activa ? 'translate-x-5.5' : 'translate-x-0.5'}`} /></button>
               </div>
             </li>
           ))}
@@ -252,43 +186,19 @@ function ModalAlarma({ abierto, setAbierto, alGuardar, alarmaAEditar }: any) {
 
   return (
     <dialog ref={dialogRef} className="backdrop:bg-foreground/40 backdrop:backdrop-blur-sm bg-transparent p-0 m-auto rounded-2xl max-w-md w-[calc(100%-2rem)]">
-      <div className="bg-card rounded-2xl p-6 border border-border">
+      <div className="bg-card rounded-2xl p-6 border border-border shadow-2xl">
         <h2 className="text-lg font-bold mb-4">{alarmaAEditar ? "Editar Alarma" : "Nueva Alarma"}</h2>
         <form onSubmit={(e) => { e.preventDefault(); alGuardar({ id: alarmaAEditar?.id, hora, medicamento, dosis }); setAbierto(false) }} className="flex flex-col gap-4">
           <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} className="h-11 border rounded-lg px-3 bg-background" required />
           <input type="text" placeholder="Medicamento" value={medicamento} onChange={(e) => setMedicamento(e.target.value)} className="h-11 border rounded-lg px-3 bg-background" required />
           <input type="text" placeholder="Dosis" value={dosis} onChange={(e) => setDosis(e.target.value)} className="h-11 border rounded-lg px-3 bg-background" />
-          <div className="flex flex-col gap-2">
-            <button type="submit" className="h-11 bg-primary text-primary-foreground font-bold rounded-lg cursor-pointer">Guardar</button>
-            <button type="button" onClick={() => setAbierto(false)} className="h-11 border rounded-lg cursor-pointer">Cancelar</button>
+          <div className="flex flex-col gap-2 mt-2">
+            <button type="submit" className="h-11 bg-primary text-primary-foreground font-bold rounded-lg cursor-pointer hover:bg-primary/90 transition-colors">Guardar</button>
+            <button type="button" onClick={() => setAbierto(false)} className="h-11 border rounded-lg cursor-pointer hover:bg-muted transition-colors text-card-foreground">Cancelar</button>
           </div>
         </form>
       </div>
     </dialog>
-  )
-}
-
-function MetricaAdherencia({ datosAdherencia }: { datosAdherencia: DatosAdherencia }) {
-  const { porcentaje, dosisTomadas, dosisTotal } = datosAdherencia
-  const circunferencia = 2 * Math.PI * 52
-  const desplazamiento = circunferencia - (porcentaje / 100) * circunferencia
-  return (
-    <div className="rounded-2xl bg-card border border-border p-5 shadow-sm h-full">
-      <h3 className="text-base font-bold mb-4">Adherencia Semanal</h3>
-      <div className="flex items-center gap-5">
-        <div className="relative">
-          <svg width="100" height="100" viewBox="0 0 120 120" className="-rotate-90">
-            <circle cx="60" cy="60" r="52" stroke="currentColor" className="text-muted/20" strokeWidth="8" fill="none" />
-            <circle cx="60" cy="60" r="52" stroke="currentColor" className="text-green-500" strokeWidth="8" fill="none" strokeDasharray={circunferencia} strokeDashoffset={desplazamiento} strokeLinecap="round" />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center font-bold">{porcentaje}%</div>
-        </div>
-        <div className="flex-1 text-xs space-y-2">
-            <div className="flex justify-between p-2 bg-green-500/10 rounded-lg text-green-700 font-bold"><span>Tomadas</span><span>{dosisTomadas}</span></div>
-            <div className="flex justify-between p-2 bg-red-500/10 rounded-lg text-red-700 font-bold"><span>Omitidas</span><span>{dosisTotal - dosisTomadas}</span></div>
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -328,21 +238,23 @@ export default function PillMateDashboard() {
     } catch (e) { console.error(e) }
   }
 
+  // AVISO AL ESP32
+  const notificarCambioHardware = async () => {
+    try {
+      await fetch('/api/esp32', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'config' })
+      });
+    } catch (e) { console.error("Error notificando al hardware", e) }
+  }
+
   const alternarAlarma = async (id: number) => {
     const alarma = listaDeAlarmas.find(a => a.id === id)
     if (!alarma) return
     try {
       const res = await fetch(`/api/alarms/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !alarma.activa }) })
-      if (res.ok) fetchAlarms()
-    } catch (e) { console.error(e) }
-  }
-
-  const prepararEliminacion = (id: number) => setConfirmarBorrado({ abierto: true, id })
-
-  const ejecutarEliminacion = async () => {
-    try {
-      const res = await fetch(`/api/alarms/${confirmarBorrado.id}`, { method: 'DELETE' })
-      if (res.ok) fetchAlarms()
+      if (res.ok) { fetchAlarms(); notificarCambioHardware(); }
     } catch (e) { console.error(e) }
   }
 
@@ -354,7 +266,14 @@ export default function PillMateDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ time: datos.hora, medicamento: datos.medicamento, dosis: datos.dosis, ...(esEdit ? {} : { active: true }) })
       })
-      if (res.ok) fetchAlarms()
+      if (res.ok) { fetchAlarms(); notificarCambioHardware(); }
+    } catch (e) { console.error(e) }
+  }
+
+  const ejecutarEliminacion = async () => {
+    try {
+      const res = await fetch(`/api/alarms/${confirmarBorrado.id}`, { method: 'DELETE' })
+      if (res.ok) { fetchAlarms(); notificarCambioHardware(); }
     } catch (e) { console.error(e) }
   }
 
@@ -368,24 +287,31 @@ export default function PillMateDashboard() {
       <Encabezado conectado={true} cantidadAlarmasActivas={alarmasActivas.length} />
       <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className="md:col-span-2">
-          {proxima ? <ProximaDosis horaObjetivo={proxima.hora} medicamento={proxima.medicamento} dosis={proxima.dosis} /> : <div className="bg-primary p-8 rounded-2xl text-white">Sin alarmas activas</div>}
+          {proxima ? <ProximaDosis horaObjetivo={proxima.hora} medicamento={proxima.medicamento} dosis={proxima.dosis} /> : <div className="bg-primary p-8 rounded-2xl text-white font-bold">Sin alarmas activas</div>}
         </div>
-        <ControlDeHardware alDispensar={() => {}} />
-        <MetricaAdherencia datosAdherencia={{ porcentaje: 85, dosisTomadas: 12, dosisTotal: 14 }} />
+        <ControlDeHardware />
+        <div className="rounded-2xl bg-card border border-border p-5 shadow-sm h-full">
+            <h3 className="text-base font-bold mb-4">Estado del Sistema</h3>
+            <div className="space-y-3">
+                <div className="flex justify-between items-center text-sm"><span>Alarmas</span><span className="font-bold">{listaDeAlarmas.length}</span></div>
+                <div className="flex justify-between items-center text-sm"><span>Activas</span><span className="font-bold text-primary">{alarmasActivas.length}</span></div>
+            </div>
+        </div>
         <div className="md:col-span-2 flex flex-col gap-4">
-          <ListaDeAlarmas listaDeAlarmas={listaDeAlarmas} alAlternar={alternarAlarma} alEditar={(a:any) => { setAlarmaAEditar(a); setModalAbierto(true) }} alEliminar={prepararEliminacion} />
+          <ListaDeAlarmas listaDeAlarmas={listaDeAlarmas} alAlternar={alternarAlarma} alEditar={(a: any) => { setAlarmaAEditar(a); setModalAbierto(true) }} alEliminar={(id: number) => setConfirmarBorrado({ abierto: true, id })} />
           <button onClick={() => { setAlarmaAEditar(null); setModalAbierto(true) }} className="h-12 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-primary/20"><Plus className="size-5" /> Nueva Alarma</button>
         </div>
         <div className="md:col-span-2">
-            <div className="bg-card border p-5 rounded-2xl">
-                <h3 className="font-bold mb-4">Historial Reciente</h3>
-                {datosHistorial.map(h => (
-                    <div key={h.id} className="flex gap-3 p-3 border-b last:border-0 items-center">
-                        <CheckCircle2 className="text-green-500 size-5" />
-                        <div><p className="text-sm font-bold">{h.medicamento}</p><p className="text-xs text-muted-foreground">{h.fecha} - {h.hora}</p></div>
-                    </div>
-                ))}
-            </div>
+          <div className="bg-card border p-5 rounded-2xl shadow-sm">
+            <h3 className="font-bold mb-4">Historial Reciente</h3>
+            {datosHistorial.length === 0 ? <p className="text-sm text-muted-foreground">No hay registros</p> : 
+              datosHistorial.map(h => (
+              <div key={h.id} className="flex gap-3 p-3 border-b last:border-0 items-center">
+                <CheckCircle2 className="text-green-500 size-5" />
+                <div><p className="text-sm font-bold">{h.medicamento}</p><p className="text-xs text-muted-foreground">{h.fecha} - {h.hora}</p></div>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
       <ModalAlarma abierto={modalAbierto} setAbierto={setModalAbierto} alGuardar={guardarAlarma} alarmaAEditar={alarmaAEditar} />
